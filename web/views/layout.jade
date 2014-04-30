@@ -1,0 +1,34 @@
+doctype html
+html
+    head
+        title= title
+        link(rel='stylesheet', href='/css/style.css')
+    body
+        #menu
+            ul
+                li: a(href="/ask")= {en: 'Ask', ru: 'Задать вопрос'} [lang]
+                li: a(href="/qas")= {en: 'Q&A', ru: 'Вопросы'} [lang]
+                li: a(href="/qas?sort")= {en: 'Popular Q&A', ru: 'Популярные вопросы'} [lang]
+                li: a(href="/about")= {en: 'About', ru: 'О сервисе'} [lang]
+        
+        mixin QA_(qa)
+            #qa
+                p= {en: 'Topic', ru: 'Тема'}[lang] + ' ' + (qa.topic||'')
+                p= {en: 'Question', ru: 'Вопрос'}[lang]
+                p= qa.question || ''
+                p= {en: 'Answer', ru: 'Ответ'}[lang]
+                p= qa.answer || ''
+                p= {en: 'Raate', ru: 'Рейтинг'}[lang] + ' ' + qa.rate
+        
+        mixin QA(qa)
+            +QA_(qa)
+            a(href="/qas/"+qa.id) link
+        
+        mixin QA_FULL(qa)
+            +QA_(qa)
+            #incr_rate_ctrl
+                form(method="post")
+                    input(type="hidden", name="id", value=qa.id)
+                    input(type="submit", value="+1")
+
+        block content
