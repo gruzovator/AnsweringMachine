@@ -1,0 +1,13 @@
+{
+    "name" : "AnsweringMachine",
+    "version": "0.0.0",
+    "description" : "Test node.js project",
+    "license" : "MIT",
+    "repository" : { 
+        "type" : "git",
+        "url" : "http://github.com/gruzovator/AnsweringMachine.git"
+    },
+    "scripts": {
+        "start": "web/server.js"
+    }
+}
