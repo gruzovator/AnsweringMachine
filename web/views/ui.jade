@@ -1,0 +1,54 @@
+doctype html
+html
+    head
+        title Q&A
+        link(rel='stylesheet', href='/css/style.css')
+    body
+        - var lang=lang||'en'
+
+        #menu
+            ul
+                li: a(href='#ask')= {en:'Ask', ru:'Задать вопрос'}[lang]
+                li: a(href='#qas')= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
+                li: a(href='#about')= {en:'About', ru:'О сервисе'}[lang]
+
+        a(name='ask')
+        #ask.sub
+            h2= {en:'Question', ru:'Вопрос'}[lang]
+            label= {en:'Topic', ru:'Тема'}[lang]
+            select
+            textarea(cols="40" rows="5")= question
+            button= {en:"Ask", ru:"Спросить"}[lang]
+
+        #answer.sub
+            h2= {en:'Answer', ru:'Ответ'}[lang]
+            p
+                span= {en: 'Topic', ru: 'Тема'}[lang]+': '
+                span.topic
+            p
+                span= {en: 'Question', ru: 'Вопрос'}[lang]+': '
+                span.question
+            p
+                span= {en: 'Answer', ru: 'Ответ'}[lang]+': '
+                span.answer
+            button= {en:"Ask Again", ru:"Спросить ещё"}[lang]
+
+        a(name='qas')
+        #qas.sub
+            h2= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
+            #qas_list
+            a.prev(href='#')= {en:'Previous', ru: 'Предыдущие'}[lang]
+            a.next(href='#')= {en:'Next', ru: 'Следующие'}[lang]
+        
+        a(name='about')
+        #about.sub
+            case lang
+                when 'en'
+                    h2 Q&A Serivce
+                    p About
+                when 'ru'
+                    h2 Сервис вопросов и ответов
+                    p О сервисе
+
+        script(src='js/zepto.min.js')
+        script(src='js/ctrl.js')

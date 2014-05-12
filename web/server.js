@@ -5,15 +5,26 @@ var bodyParser = require('body-parser');
 var log4js = require('log4js');
 var cfg = require('./config.js');
 var mongo  = require('mongoskin');
-var fs = require('fs');
 var log = log4js.getLogger('WebServer');
 
 var answering_machine = {
+    _seed: 0,
     ask: function(question, cb) {
-        cb(null, 'random text');
+        cb(null, 'random text ' + (++this._seed));
     },
-    topics: [ 'test1', 'test2']
+    topics: [ 'topic 1', 'topic 2']
 }
+
+function escape(html){
+    var result = String(html)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    if (result === '' + html) return html;
+    else return result;
+};
+
 
 //-------------
 // DB setup
@@ -24,6 +35,8 @@ var db = mongo.db('mongodb://@localhost:27017/AnsweringMachine', {safe:true});
 // Server setup
 //-------------
 var app = express();
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
 app.use(log4js.connectLogger(log4js.getLogger('Web')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser());
@@ -38,9 +51,8 @@ app.param('user', function(req, res, next, collection_name){
 //------------------------------
 // WEB UI
 //------------------------------
-var ui = fs.readFileSync('public/ui.html', {encoding: 'utf8'});
 app.get('/', function(req, res, next){
-    res.send(ui);
+    res.render('ui');
 });
 //------------------------------
 // REST API
@@ -61,9 +73,14 @@ app.get('/:user/topics', function(req, res, next){
 
 app.post('/:user/qas', function(req, res, next){
     var q = {
-        topic: req.body.topic,
-        text: req.body.question
+        topic: escape(req.body.topic),
+        text: escape(req.body.question)
     };
+    if(answering_machine.topics.indexOf(q.topic)==-1){
+        return res.send(400, 'unknown topic');
+    }
+    if(q.text.length==0)
+        return res.send(400, 'empty text');
     answering_machine.ask(q, function(err, answer){
         if(err) return next(err);
         var qa = {
@@ -74,7 +91,7 @@ app.post('/:user/qas', function(req, res, next){
         }
         req.collection.insert(qa, {}, function(err, result){
             if(err) return next(err);
-            res.send(result);
+            res.send(result[0]);
         });
     });
 })
@@ -114,7 +131,9 @@ app.use(function(req,res, next) {
     next({status: 404, message: 'Not found'});
 });
 if (app.get('env') === 'development') {
+    app.locals.pretty = true;
     app.use(function(err, req, res, next) {
+        log.error(err);
         res.send(err.status || 500, { msg: err.message, err:err });
     });
 }
