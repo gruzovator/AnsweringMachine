@@ -60,7 +60,10 @@ app.get('/', function(req, res, next){
 app.get('/:user/qas', function(req, res, next){
     var skip = parseInt(req.query.skip) || 0;
     var number = Math.min(parseInt(req.query.number) || 10, 100);
-    req.collection.find({},{skip: skip, limit:number, sort: [['_id',-1]]}).toArray(
+    var sort = [['_id',-1]];
+    if(req.query.sort)
+        sort=[['rate', -1]];
+    req.collection.find({},{skip: skip, limit:number, sort: sort}).toArray(
         function(err, results) {
             if (err) return next(err);
             res.send(results);

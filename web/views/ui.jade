@@ -8,40 +8,52 @@ html
 
         #menu
             ul
-                li: a(href='#ask')= {en:'Ask', ru:'Задать вопрос'}[lang]
-                li: a(href='#qas')= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
-                li: a(href='#about')= {en:'About', ru:'О сервисе'}[lang]
+                li: a.tab_link(title='ask', href='#')= {en:'Ask', ru:'Задать вопрос'}[lang]
+                li: a.tab_link(title='qas', href='#')= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
+                li: a.tab_link(title='about', href='#')= {en:'About', ru:'О сервисе'}[lang]
 
-        a(name='ask')
-        #ask.sub
+        #ask.tab
             h2= {en:'Question', ru:'Вопрос'}[lang]
             label= {en:'Topic', ru:'Тема'}[lang]
-            select
-            textarea(cols="40" rows="5")= question
-            button= {en:"Ask", ru:"Спросить"}[lang]
+            select(name='toipcs')
+            textarea(cols='40', rows='5')= question
+            button= {en:'Ask', ru:'Спросить'}[lang]
 
-        #answer.sub
-            h2= {en:'Answer', ru:'Ответ'}[lang]
-            p
-                span= {en: 'Topic', ru: 'Тема'}[lang]+': '
-                span.topic
-            p
-                span= {en: 'Question', ru: 'Вопрос'}[lang]+': '
-                span.question
-            p
-                span= {en: 'Answer', ru: 'Ответ'}[lang]+': '
-                span.answer
-            button= {en:"Ask Again", ru:"Спросить ещё"}[lang]
+        #answer.tab
+            #qa.qa
+                p
+                    span.timestamp
+                p
+                    span= {en: 'Topic', ru: 'Тема'}[lang]+': '
+                    span.topic
+                p
+                    span= {en: 'Question', ru: 'Вопрос'}[lang]+': '
+                    span.question
+                p
+                    span= {en: 'Answer', ru: 'Ответ'}[lang]+': '
+                    span.answer
+                p
+                    span= {en: 'Rating', ru: 'Рейтинг'}[lang]+': '
+                    span.rate
+            button#btn_rate +1
 
-        a(name='qas')
-        #qas.sub
+        #qas.tab
             h2= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
+            -var prev_text = {en:'Previous', ru: 'Предыдущие'}[lang]
+            -var next_text = {en:'Next', ru: 'Следующие'}[lang]
+            -var sort_by_date_text = {en:'Sort by Time', ru: 'Сортировать по времени'}[lang]
+            -var sort_by_rate_text = {en:'Sort by Rate', ru: 'Сортировать по рейтингу'}[lang]
+            a.nav(title='prev', href='#')= prev_text
+            a.nav(title='next', href='#')= next_text
+            a.sort(title='sort_by_date', href='#')= sort_by_date_text
+            a.sort(title='sort_by_rate', href='#')= sort_by_rate_text
             #qas_list
-            a.prev(href='#')= {en:'Previous', ru: 'Предыдущие'}[lang]
-            a.next(href='#')= {en:'Next', ru: 'Следующие'}[lang]
-        
-        a(name='about')
-        #about.sub
+            a.nav(title='prev', href='#')= prev_text
+            a.nav(title='next', href='#')= next_text
+            a.sort(title='sort_by_date', href='#')= sort_by_date_text
+            a.sort(title='sort_by_rate', href='#')= sort_by_rate_text
+
+        #about.tab
             case lang
                 when 'en'
                     h2 Q&A Serivce
