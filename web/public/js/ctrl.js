@@ -35,10 +35,10 @@ function Init() {
         $('.tab').hide();
         var f = tabs[title];
         if(!history.state)
-             history.replaceState({tab:title, args:args});
+             history.replaceState({tab:title, args:args}, title);
         else 
         if(history.state.tab!==title)
-            history.pushState({tab:title, args:args});
+            history.pushState({tab:title, args:args}, title);
         tabs[title](args);
     }
 
@@ -141,7 +141,7 @@ function Init() {
 
     $('a').on('click', function(e){e.preventDefault();});
     $('a.tab_link').on('click', function(e){
-        var title = e.toElement.getAttribute('title');
+        var title = e.target.getAttribute('title');
         ActivateTab(title);
     });
 
@@ -155,7 +155,7 @@ function Init() {
         var qa_id = window.location.search.substr(1).split("=")[1];
     }
     if(qa_id) {
-        history.replaceState({tab:'qas'}, null,'/');
+        history.replaceState({tab:'qas'}, 'qas','/');
         ActivateTab('answer', qa_id);
     }
     else ActivateTab('ask');
