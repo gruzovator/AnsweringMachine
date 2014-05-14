@@ -74,7 +74,7 @@ app.param('user', function(req, res, next, collection_name){
 // WEB UI
 //------------------------------
 app.get('/', function(req, res, next){
-    res.render('ui');
+    res.render('ui', {qa_id: req.query.qa});
 });
 
 //------------------------------

@@ -5,7 +5,6 @@ html
         link(rel='stylesheet', href='/css/style.css')
     body
         - var lang=lang||'en'
-
         #menu
             ul
                 li: a.tab_link(title='ask', href='#')= {en:'Ask', ru:'Задать вопрос'}[lang]
@@ -35,7 +34,10 @@ html
                 p
                     span= {en: 'Rating', ru: 'Рейтинг'}[lang]+': '
                     span.rate
-            button#btn_rate +1
+                p
+                    a.link= {en: 'Link', ru: 'Ссылка'}[lang]
+                p
+                    button.btn_rate +1
 
         #qas.tab
             h2= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
@@ -64,3 +66,4 @@ html
 
         script(src='js/zepto.min.js')
         script(src='js/ctrl.js')
+
