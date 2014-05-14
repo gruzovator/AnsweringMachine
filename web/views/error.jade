@@ -1,5 +1,6 @@
 extends layout
+
 block content
-    h2= err.status
-    h2= err.message
-    pre #{err.stack}
+  h1= message[lang] || message
+  h2= error.status
+  pre #{error.stack}

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var path = require('path');
 var express = require('express');
-var BodyParser = require('body-parser');
+var bodyParser = require('body-parser');
 var log4js = require('log4js');
 var cfg = require('./config.js');
 var mongo  = require('mongoskin');
@@ -16,7 +16,7 @@ var answering_machine = {
     ask: function(question, cb) {
         cb(null, 'random text ' + (++this._seed));
     },
-    topics: function(){ return [ 'topic 1', 'topic 2'] }
+    topics: [ 'topic 1', 'topic 2']
 };
 
 //-------------
@@ -36,17 +36,33 @@ function IsString(smth) {
     return typeof(smth) == 'string' || smth instanceof String;
 }
 
-var ERRORS = {
-    BAD_REQUEST : 400,
-    NOT_FOUND: 404,
-    FORBIDDEN: 403,
-    NOT_ACCEPTABLE: 406,
-    INTERNAL: 500,
-};
-
-function MakeError(code, msg) {
+function ErrBadRequest(msg) {
     var err = new Error(msg);
-    err.status = code;
+    err.status = 400;
+    return err;
+}
+
+function ErrNotFound(msg) {
+    var err = new Error(msg);
+    err.status = 404;
+    return err;
+}
+
+function ErrForbidden(msg) {
+    var err = new Error(msg);
+    err.status = 403;
+    return err;
+}
+
+function ErrInternal(msg) {
+    var err = new Error(msg);
+    err.status = 500;
+    return err;
+}
+
+function ErrNotAcceptable(msg) {
+    var err = new Error(msg);
+    err.status = 406;
     return err;
 }
 
@@ -63,16 +79,30 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(log4js.connectLogger(log4js.getLogger('Web')));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(BodyParser());
+app.use(bodyParser());
 
 //------------------------------
 // API
 //------------------------------
 app.use(function(req, res, next){
-    req.collection = db.collection('default', {strict: true}, function(err){ return next(err) });
+    if(req.accepts('html'))
+        req.render_ui = true;
+    else
+        req.render_ui = false;
+    log.debug(req.render_ui);
+    next();
 });
 
-app.route('/qas')
+app.param('user', function(req, res, next, collection_name){
+    if(collection_name!=='default')
+        return res.send(404);
+    req.collection = db.collection(collection_name, {strict: true}, function(err){
+        return next(err);
+    });
+});
+
+
+app.route('/:user/qas')
     .get(function(req, res, next){
         var skip = parseInt(req.query.skip) || 0;
         var number = Math.min(parseInt(req.query.number) || 10, 100);
@@ -80,10 +110,10 @@ app.route('/qas')
         req.collection.find({},{skip: skip, limit:number, sort: sort}).toArray(
             function(err, qas) {
                 if (err) return next(err);
-                res.format({
-                    html: function(){ res.render('qas', {qas:qas}) },
-                    json: function(){ res.send(qas) }
-                });
+                if(req.render_ui)
+                    res.render('qas', {qas:qas})
+                else
+                    res.send(qas);
             });
     })
     .post(function(req, res, next){
@@ -92,9 +122,9 @@ app.route('/qas')
             text: escape(req.body.question)
         };
         if(!IsString(q.topic) || q.topic.length==0 )
-            return next(MakeError(ERRORS.BAD_REQUEST, 'Wrong topic'));
+            return next(ErrBadRequest('Wrong topic'));
         if(!IsString(q.text) || q.text.length==0 )
-            return next(MakeError(ERRORS.BAD_REQUEST, 'Wrong text type or empty text'));
+            return next(ErrBadRequest('Wrong text type or empty text'));
         answering_machine.ask(q, function(err, answer){
             if(err) return next(err);
             var qa = {
@@ -103,88 +133,92 @@ app.route('/qas')
                 answer: answer,
                 rate: 0
             }
-            req.collection.insert(qa, {}, function(err, results){
+            req.collection.insert(qa, {}, function(err, result){
                 if(err) return next(err);
                 var qa = results[0];
                 if(!qa)
-                    return next(MakeError(ERRORS.INTERNAL, 'QAs Storage Error'));
-                res.format({
-                    html: function(){ res.render('qa', {qa:qa}) },
-                    json: function(){ res.send(qa) }
-                });
+                    return next(ErrInternal('QAs Storage Error'));
+                if(req.render_ui)
+                    res.render('qa', {qa:qa});
+                else
+                    res.send(qa);
             });
         });
     });
-
-app.route('/qas/:id')
+app.route('/:user/qas/:id')
     .get(function(req, res, next){
         req.collection.findById(req.params.id, function(err, qa){
             if(err) return next(err);
-            if(!qa) return next(MakeError(ERRORS.NOT_FOUND));
-            res.format({
-                html: function(){ res.render('qa', {qa:qa}) },
-                json: function(){ res.send(qa) }
-            });
+            if(!qa) return next(ErrNotFound());
+            if(req.render_ui)
+                res.render('qa', {qa:qa});
+            else
+                res.send(qa);
         });
     })
     .put(function(req, res, next){ //TODO: only once per session
         req.collection.updateById(req.params.id, {$inc:{rate: 1}}, {safe:true, multi:false}, 
             function(err, result){
                 if (err) return next(err);
-                if(result!==1) return next(MakeError(ERRORS.NOT_FOUND));
-                res.format({
-                    json: function(){ res.send() }
-                });
+                if(result===1) {
+                    if(req.render_ui)
+                        res.redirect(req.url);
+                    else
+                        res.send();
+                }
+                else
+                    next(ErrNotFound());
             });
     })
     .delete(function(req, res, next) {
         req.collection.removeById(req.params.id, 
             function(err, result){
                 if (err) return next(err);
-                if(result!==1) return next(MakeError(ERRORS.NOT_FOUND));
-                res.format({
-                    html: function(){ res.redirect('../') },
-                    json: function(){ res.send() }
-                });
+                if(result===1) {
+                    if(req.render_ui)
+                        res.redirect(req.url);
+                    else
+                        res.send();
+                }
+                else
+                    next(ErrNotFound());
             });
     });
 
-app.get('/ask', function(req, res, next){
-    res.format({
-        html: function(){ res.render('ask', {topics: answering_machine.topics()}) }
-    });
+app.get('/:user/topics', function(req, res, next){
+    if(req.render_ui) return next(ErrNotAcceptable());
+    res.send(answering_machine.topics);
 });
 
-app.get('/about', function(req, res, next){
-    res.format({
-        html: function(){ res.render('about') }
-    });
+app.get('/:user/ask', function(req, res, next){
+    if(!req.render_ui) return next(ErrNotAcceptable());
+    res.render('ask');
 });
 
 //------------------------------
 // Not found and errors handling
 //------------------------------
 app.use(function(req,res, next) {
-    next(MakeError(ERRORS.NOT_FOUND,'Path ' + req.url + ' not found'));
+    next(ErrNotFound(req.url));
 });
 
 if(app.get('env') === 'development') {
     app.locals.pretty = true;
     app.use(function(err, req, res, next) {
         err.status = err.status || 500;
-        res.format({
-            html: function(){ res.status(err.status).render('error', {err:err}) },
-            default: function(){ res.send(err.status, err)}
-        });
+        if(req.render_ui)
+            res.render('error', {err:err});
+        else
+            res.send(err.status, err);
     });
 }
 
 app.use(function(err, req, res, next) {
     err.status = err.status || 500;
-    res.format({
-        html: function(){ res.status(err.status).render('error', {err: {status : err.status}}) },
-        default: function(){ res.send(err.status) }
-    });
+    if(req.render_ui)
+        res.render('error', {err: {status : err.status} });
+    else
+        res.send(err.status);
 });
 
 //----------------------------------

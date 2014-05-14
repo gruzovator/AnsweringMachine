@@ -1,6 +1,11 @@
 extends layout
 block content
-    h2= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
+    h2= {en:'Q&A', ru:'Вопросы'}[lang]
     #qas
-        each qa in qas || {}
+        each qa in qas
             +QA(qa)
+    #prev_next
+        -if(prev_link)
+            a(href=prev_link)#prev_link= {en:'Previous', ru:'Предыдущие'}[lang]
+        -if(next_link)
+            a(href=next_link)#next_link= {en:'Next', ru:'Следующие'}[lang]

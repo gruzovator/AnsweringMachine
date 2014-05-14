@@ -1,13 +1,17 @@
 extends layout
 block content
     h2= {en:'Question', ru:'Вопрос'}[lang]
-    form(method='post', action='/qas')
+    form(method="post")
         p
             label= {en:'Topic', ru:'Тема'}[lang]
-            select(name='topic')
+            select(name="topic")
                 each topic in topics || {}
-                    option(value=topic)= topic
+                    -if(last_topic && topic==last_topic)
+                        option(value=topic, selected)= topic
+                    -else
+                        option(value=topic)= topic
         p
-            textarea(name='question' cols='40' rows='5')= question
+            textarea(name="question" cols="40" rows="5")= question
         p
-            input(type='submit', value={en:'Ask', ru:'Спросить'}[lang])
+            input(type="submit", value={en:"Ask", ru:"Спросить"}[lang])
+

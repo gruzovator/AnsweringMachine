@@ -1,37 +1,34 @@
 doctype html
 html
     head
-        title Q&A
+        title= title
         link(rel='stylesheet', href='/css/style.css')
     body
-        - var lang=lang||'en'
         #menu
             ul
-                li: a(href='/ask')= {en:'Ask', ru:'Задать вопрос'}[lang]
-                li: a(href='/qas')= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
-                li: a(href='/about')= {en:'About', ru:'О сервисе'}[lang]
-
+                li: a(href="/ask")= {en: 'Ask', ru: 'Задать вопрос'} [lang]
+                li: a(href="/qas")= {en: 'Q&A', ru: 'Вопросы'} [lang]
+                li: a(href="/qas?sort")= {en: 'Popular Q&A', ru: 'Популярные вопросы'} [lang]
+                li: a(href="/about")= {en: 'About', ru: 'О сервисе'} [lang]
+        
+        mixin QA_(qa)
+            #qa
+                p= {en: 'Topic', ru: 'Тема'}[lang] + ' ' + (qa.topic||'')
+                p= {en: 'Question', ru: 'Вопрос'}[lang]
+                p= qa.question || ''
+                p= {en: 'Answer', ru: 'Ответ'}[lang]
+                p= qa.answer || ''
+                p= {en: 'Raate', ru: 'Рейтинг'}[lang] + ' ' + qa.rate
+        
         mixin QA(qa)
-            .qa
-                p
-                    span.timestamp= new Date(qa.timestamp*1000)
-                p
-                    span= {en: 'Topic', ru: 'Тема'}[lang]+': '
-                    span.topic= qa.question.topic
-                p
-                    span= {en: 'Question', ru: 'Вопрос'}[lang]+': '
-                    span.question= qa.question.text
-                p
-                    span= {en: 'Answer', ru: 'Ответ'}[lang]+': '
-                    span.answer= qa.answer
-                p
-                    span= {en: 'Rating', ru: 'Рейтинг'}[lang]+': '
-                    span.rate= qa.rate
-                p
-                    a.link(href='/qas/'+qa._id)= {en: 'Link', ru: 'Ссылка'}[lang]
-                p
-                    button.rate(qa_id=qa._id)= {en:'+1', ru:'+1'}[lang]
+            +QA_(qa)
+            a(href="/qas/"+qa.id) link
+        
+        mixin QA_FULL(qa)
+            +QA_(qa)
+            #incr_rate_ctrl
+                form(method="post")
+                    input(type="hidden", name="id", value=qa.id)
+                    input(type="submit", value="+1")
 
         block content
-        script(src='js/zepto.min.js')
-        script(src='js/ctrl.js')
