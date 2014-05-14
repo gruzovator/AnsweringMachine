@@ -7,14 +7,20 @@ var cfg = require('./config.js');
 var mongo  = require('mongoskin');
 var log = log4js.getLogger('WebServer');
 
+//-------------
+// Stub
+//-------------
 var answering_machine = {
     _seed: 0,
     ask: function(question, cb) {
         cb(null, 'random text ' + (++this._seed));
     },
-    topics: [ 'topic 1', 'topic 2']
+    topics: function() { return [ 'topic 1', 'topic 2']}
 }
 
+//-------------
+// Utils
+//-------------
 function escape(html){
     var result = String(html)
         .replace(/&/g, '&amp;')
@@ -24,7 +30,23 @@ function escape(html){
     if (result === '' + html) return html;
     else return result;
 };
+function IsString(smth) {
+    return typeof(smth) == 'string' || smth instanceof String;
+}
 
+var ERRORS = {
+    BAD_REQUEST : 400,
+    NOT_FOUND: 404,
+    FORBIDDEN: 403,
+    NOT_ACCEPTABLE: 406,
+    INTERNAL: 500,
+};
+
+function MakeError(code, msg) {
+    var err = new Error(msg);
+    err.status = code;
+    return err;
+}
 
 //-------------
 // DB setup
@@ -54,98 +76,98 @@ app.param('user', function(req, res, next, collection_name){
 app.get('/', function(req, res, next){
     res.render('ui');
 });
+
 //------------------------------
 // REST API
 //------------------------------
-app.get('/:user/qas', function(req, res, next){
-    var skip = parseInt(req.query.skip) || 0;
-    var number = Math.min(parseInt(req.query.number) || 10, 100);
-    var sort = [['_id',-1]];
-    if(req.query.sort)
-        sort=[['rate', -1]];
-    req.collection.find({},{skip: skip, limit:number, sort: sort}).toArray(
-        function(err, results) {
-            if (err) return next(err);
-            res.send(results);
+app.route('/:user/qas')
+   .get(function(req, res, next){
+        var skip = parseInt(req.query.skip) || 0;
+        var number = Math.min(parseInt(req.query.number) || 10, 100);
+        var sort = req.query.sort ? [['rate', -1]] : [['_id',-1]];
+        req.collection.find({},{skip: skip, limit:number, sort: sort}).toArray(
+            function(err, qas) {
+                if (err) return next(err);
+                res.send(qas);
+            });
+    })
+    .post(function(req, res, next){
+        var q = {
+            topic: escape(req.body.topic),
+            text: escape(req.body.question)
+        };
+        if(!IsString(q.topic) || q.topic.length==0 )
+            return next(MakeError(ERRORS.BAD_REQUEST, 'Wrong topic'));
+        if(!IsString(q.text) || q.text.length==0 )
+            return next(MakeError(ERRORS.BAD_REQUEST, 'Wrong text type or empty text'));
+        answering_machine.ask(q, function(err, answer){
+            if(err) return next(err);
+            var qa = {
+                timestamp: Date.now()/1000 | 0,
+                question: q,
+                answer: answer,
+                rate: 0
+            }
+            req.collection.insert(qa, {}, function(err, results){
+                if(err) return next(err);
+                var qa = results[0];
+                if(!qa)
+                    return next(MakeError(ERRORS.INTERNAL, 'QAs Storage Error'));
+                res.send(qa);
+            });
         });
-});
+    });
+
+app.route('/:user/qas/:id')
+    .get(function(req, res, next){
+        req.collection.findById(req.params.id, function(err, qa){
+            if(err) return next(err);
+            if(!qa) return next(MakeError(ERRORS.NOT_FOUND));
+            res.send(qa);
+        });
+    })
+    .put(function(req, res, next){ //TODO: only once per session
+        req.collection.updateById(req.params.id, {$inc:{rate: 1}}, {safe:true, multi:false}, 
+            function(err, result){
+                if (err) return next(err);
+                if(result!==1) return next(MakeError(ERRORS.NOT_FOUND));
+                res.send('OK');
+            });
+    })
+    .delete(function(req, res, next) {
+        req.collection.removeById(req.params.id, 
+            function(err, result){
+                if (err) return next(err);
+                if(result!==1) return next(MakeError(ERRORS.NOT_FOUND));
+                res.send('OK');
+            });
+    });
 
 app.get('/:user/topics', function(req, res, next){
-    res.send(answering_machine.topics);
-});
-
-app.post('/:user/qas', function(req, res, next){
-    var q = {
-        topic: escape(req.body.topic),
-        text: escape(req.body.question)
-    };
-    if(answering_machine.topics.indexOf(q.topic)==-1){
-        return res.send(400, 'unknown topic');
-    }
-    if(q.text.length==0)
-        return res.send(400, 'empty text');
-    answering_machine.ask(q, function(err, answer){
-        if(err) return next(err);
-        var qa = {
-            timestamp: Date.now()/1000 | 0,
-            question: q,
-            answer: answer,
-            rate: 0
-        }
-        req.collection.insert(qa, {}, function(err, result){
-            if(err) return next(err);
-            res.send(result[0]);
-        });
-    });
-})
-
-app.get('/:user/qas/:id', function(req, res, next) {
-    req.collection.findById(req.params.id, function(err, result){
-        if(err) return next(err);
-        res.send(result);
-    });
-});
-
-app.put('/:user/qas/:id', function(req, res, next) {
-    req.collection.updateById(req.params.id, {$inc:{rate: 1}}, {safe:true, multi:false}, 
-        function(err, result){
-            if (err) return next(err);
-            if(result===1)
-                res.send('OK');
-            else
-                res.send(404);
-        });
-});
-
-app.del('/:user/qas/:id', function(req, res, next) {
-    req.collection.removeById(req.params.id, function(err, result){
-        if (err) return next(err);
-        if(result===1)
-            res.send('OK');
-        else
-            res.send(404);
-    });
+    res.send(answering_machine.topics());
 });
 
 //------------------------------
 // Not found and errors handling
 //------------------------------
 app.use(function(req,res, next) {
-    next({status: 404, message: 'Not found'});
+    next(MakeError(ERRORS.NOT_FOUND,'Path ' + req.url + ' not found'));
 });
-if (app.get('env') === 'development') {
+
+if(app.get('env') === 'development') {
     app.locals.pretty = true;
     app.use(function(err, req, res, next) {
-        log.error(err);
-        res.send(err.status || 500, { msg: err.message, err:err });
+        err.status = err.status || 500;
+        res.send(err.status, err);
     });
 }
+
 app.use(function(err, req, res, next) {
-        res.send(err.status || 500);
+    err.status = err.status || 500;
+    res.send(err.status);
 });
 
 //----------------------------------
-// Run server
+// Run 
 //----------------------------------
 app.listen(cfg.port || 3000)
-
