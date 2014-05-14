@@ -5,64 +5,68 @@ html
         link(rel='stylesheet', href='/css/style.css')
     body
         - var lang=lang||'en'
-        #menu
-            ul
-                li: a.tab_link(title='ask', href='#')= {en:'Ask', ru:'Задать вопрос'}[lang]
-                li: a.tab_link(title='qas', href='#')= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
-                li: a.tab_link(title='about', href='#')= {en:'About', ru:'О сервисе'}[lang]
+        #content
+            #menu
+                ul
+                    li: a.tab_link.active(title='ask', href='#')= {en:'Ask', ru:'Задать вопрос'}[lang]
+                    li: a.tab_link(title='qas', href='#')= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
+                    li: a.tab_link(title='about', href='#')= {en:'About', ru:'О сервисе'}[lang]
 
-        #ask.tab
-            h2= {en:'Question', ru:'Вопрос'}[lang]
-            label= {en:'Topic', ru:'Тема'}[lang]
-            select.cbx_topics
-            textarea.txt_question(cols='40', rows='5')= question
-            button.btn_ask= {en:'Ask', ru:'Спросить'}[lang]
+            #ask.tab
+                h2= {en:'Question', ru:'Вопрос'}[lang]
+                p.topics
+                    label= {en:'Topic', ru:'Тема'}[lang]
+                    select.topics
+                p.question
+                    textarea.question= question
+                p.ask
+                    button.ask= {en:'Ask', ru:'Спросить'}[lang]
 
-        #answer.tab
+            #answer.tab
 
-        #qas.tab
-            h2= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
-            -var prev_text = {en:'Previous', ru: 'Предыдущие'}[lang]
-            -var next_text = {en:'Next', ru: 'Следующие'}[lang]
-            a.nav.btn_prev(href='#')= prev_text
-            a.nav.btn_next(href='#')= next_text
-            select.cbx_sort
-                option(value='time', selected)= {en:'Sort by Time', ru: 'Сортировать по времени'}[lang]
-                option(value='rate')= {en:'Sort by Rate', ru: 'Сортировать по рейтингу'}[lang]
-            a.sort(href='#')= sort
-            a.sort.by_rate(href='#')= sort_by_rate_text
-            #qas_list
-            a.nav.btn_prev(href='#')= prev_text
-            a.nav.btn_next(href='#')= next_text
+            #qas.tab
+                h2= {en:'Q&A', ru:'Вопросы-ответы'}[lang]
+                -var prev_text = {en:'Previous', ru: 'Предыдущие'}[lang]
+                -var next_text = {en:'Next', ru: 'Следующие'}[lang]
+                a.nav.btn_prev(href='#')= prev_text
+                a.nav.btn_next(href='#')= next_text
+                select.cbx_sort
+                    option(value='time', selected)= {en:'Sort by Time', ru: 'Сортировать по времени'}[lang]
+                    option(value='rate')= {en:'Sort by Rate', ru: 'Сортировать по рейтингу'}[lang]
+                a.sort(href='#')= sort
+                a.sort.by_rate(href='#')= sort_by_rate_text
+                #qas_list
+                a.nav.btn_prev(href='#')= prev_text
+                a.nav.btn_next(href='#')= next_text
 
-        #about.tab
-            case lang
-                when 'en'
-                    h2 Q&A Serivce
-                    p About
-                when 'ru'
-                    h2 Сервис вопросов и ответов
-                    p О сервисе
+            #about.tab
+                case lang
+                    when 'en'
+                        h2 Q&A Serivce
+                        p About
+                    when 'ru'
+                        h2 Сервис вопросов и ответов
+                        p О сервисе
 
-        #qa_template.qa
-            p
-                span.timestamp
-            p
-                span= {en: 'Topic', ru: 'Тема'}[lang]+': '
-                span.topic
-            p
-                span= {en: 'Question', ru: 'Вопрос'}[lang]+': '
-                span.question
-            p
-                span= {en: 'Answer', ru: 'Ответ'}[lang]+': '
-                span.answer
-            p
-                span= {en: 'Rating', ru: 'Рейтинг'}[lang]+': '
-                span.rate
-            p
-                a.link= {en: 'Link', ru: 'Ссылка'}[lang]
-            p
-                button.btn_rate +1
+            #qa_template.qa
+                p
+                    span.timestamp
+                p
+                    span= {en: 'Topic', ru: 'Тема'}[lang]+': '
+                    span.topic
+                p
+                    span= {en: 'Question', ru: 'Вопрос'}[lang]+': '
+                    span.question
+                p
+                    span= {en: 'Answer', ru: 'Ответ'}[lang]+': '
+                    span.answer
+                p
+                    span= {en: 'Rating', ru: 'Рейтинг'}[lang]+': '
+                    span.rate
+                p
+                    a.link= {en: 'Link', ru: 'Ссылка'}[lang]
+                p
+                    button.btn_rate +1
         script(src='js/zepto.min.js')
         script(src='js/ctrl.js')
 

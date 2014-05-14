@@ -48,9 +48,9 @@ function Init() {
         UpdateTopics();
         var tab = $('#ask');
         var ctrl = {
-            btn_ask : $('.btn_ask', tab),
-            cbx_topics: $('.cbx_topics', tab),
-            txt_question: $('.txt_question', tab)
+            btn_ask : $('button.ask', tab),
+            cbx_topics: $('select.topics', tab),
+            txt_question: $('textarea.question', tab)
         };
         ctrl.btn_ask.on('click', function(){
             $.ajax({type:'POST', url:'/default/qas/', 
@@ -142,6 +142,8 @@ function Init() {
     $('a').on('click', function(e){e.preventDefault();});
     $('a.tab_link').on('click', function(e){
         var title = e.target.getAttribute('title');
+        $('#menu a').removeClass('active');
+        $(e.target).addClass('active');
         ActivateTab(title);
     });
 
