@@ -11,10 +11,8 @@ function Init() {
                 topic: $('select', c).val(),
                 question: $('textarea', c).val()
             };
-            $.ajax({
-                type:'POST',
-                url:'/default/qas/',
-                success: function(reply){ tabs.answer(reply); }
+            $.ajax({type:'POST', url:'/default/qas/', data: data,
+                success: function(reply){ ActivateTab('answer', [reply]); }
             });
         });
         return function() {
