@@ -57,6 +57,7 @@ var db = mongo.db('mongodb://@localhost:27017/AnsweringMachine', {safe:true});
 // Server setup
 //-------------
 var app = express();
+app.locals.lang ='en';
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(log4js.connectLogger(log4js.getLogger('Web')));
@@ -158,13 +159,28 @@ if(app.get('env') === 'development') {
     app.locals.pretty = true;
     app.use(function(err, req, res, next) {
         err.status = err.status || 500;
-        res.send(err.status, err);
+        res.format({
+            html: function() { 
+                if(err.status===404)
+                    res.redirect('/');
+                else
+                    res.status(err.status).render('error', {err: err}); 
+            },
+            default: function() { res.send(err.status, err); }
+        });
     });
 }
 
 app.use(function(err, req, res, next) {
     err.status = err.status || 500;
-    res.send(err.status);
+        res.format({
+            html: function() { 
+                if(err.status===404)
+                    res.redirect('/');
+                else
+                    res.status(err.status).render('error', {err: err.status}); },
+            default: function() { res.send(err.status); }
+        });
 });
 
 //----------------------------------
