@@ -1,52 +1,135 @@
+html {
+    overflow: -moz-scrollbars-vertical; 
+    overflow-y: scroll;
+}
+
 body {
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-}
-
-#content {
-    border-color: black;
-    border-width: 1px;
-    border-style: solid;
-    
-    max-width: 800px;
-    margin: 10px auto;
-    padding: 10px;
-}
-
-#ask p {
-    /*background-color: gray;*/
-}
-
-#ask p.question {
-    text-align: center;
-}
-
-#ask textarea.question {
-    width: 700px;
-}
-
-/*#menu {
-    background-color: gray;
-    margin: 0px;
-    padding: 0px;
-}
-
-.tab {
-    background-color: yellow;
-    margin: 0px;
-    padding: 10px;
-}
-
-#menu li {
-    display: inline;
-}
-
-#menu a {
-}
-
-#menu a.active {
-    background-color: white;
+    background-image: url("../img/bg.png");
+    background-repeat: repeat-x;
 }
 
 a {
-    color: #00B7FF;
-}*/
+    color: #00B7FF;;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #00B7FF;;
+}
+
+a:hover {
+    text-decoration:underline;
+}
+
+.content {
+    background-color: white;
+    border-color: black;
+    border-width: 1px;
+    border-style: solid;
+    max-width: 800px;
+    min-height: 500px;
+    margin: 10px auto;
+}
+
+.tab {
+    padding: 10px;
+    padding-top: 0px;
+}
+
+.menu ul {
+    text-align: right;
+}
+
+.menu li {
+    display: inline;
+    margin-right: 10px;
+}
+
+.question_input textarea{
+    resize: vertical;
+    width: 100%;
+    height: 100px;
+    display: block;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.question_input button{
+    display: block;
+    margin-left:auto;
+    margin-top: 5px;
+}
+
+.qa {
+    border-color: gray;
+    border-width: 1px;
+    border-style: dotted;
+    margin: 20px 0px;
+    padding: 5px;
+    position: relative;
+}
+
+.qa .question{
+    margin-top: 5px;
+}
+
+.qa .answer{
+    margin-top: 5px;
+}
+
+.qa .link{
+    position: absolute;
+    bottom: 5px;
+    right: 20px;
+}
+
+#qas .sort  {
+    text-align: right;
+}
+
+#qas .nav  {
+    text-align: center;
+}
+
+#qas .nav a {
+    margin-right: 20px;
+}
+
+#qas .hidden {
+    color: gray;
+    pointer-events: none;
+    cursor: default;    
+}
+
+#qas .qa .label{
+    display: none;
+}
+
+#qas .qa .value{
+    display: inline-block;
+    max-height: 300px;
+    overflow: hidden;
+}
+
+#qas .qa .topic{
+    display: none;
+}
+
+#answer .rate .label {
+    display: none;
+}
+
+#answer .label {
+    font-weight: bold;
+}
+
+#answer div {
+    margin-top: 10px;
+}
+#answer .timestamp {
+    margin-top: 0px;
+}

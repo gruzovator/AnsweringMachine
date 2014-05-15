@@ -1,21 +1,37 @@
 window.onload = Init;
 
+function FixedWidth(str, size, pad) {
+    str = str.toString();
+    if(str.length >= size) return str;
+    if(!pad) pad ='0';
+    str = new Array(size+1).join(pad) + str;
+    return str.slice(-size);
+}
+
 function Init() {
     function MakeQA(qa) {
         var e = $('#qa_template').clone().attr('id',qa._id);
-        $('.timestamp',e).text(new Date(qa.timestamp * 1000));
-        $('.topic',e).text(qa.question.topic);
-        $('.question',e).text(qa.question.text);
-        $('.answer',e).text(qa.answer);
-        var rate_elem = $('.rate', e);
-        rate_elem.text(qa.rate);
-        $('.link', e).attr('href', '/?qa='+qa._id).on('click',function(e){
+        var dt = new Date(qa.timestamp * 1000);
+        var dts = dt.getFullYear() + '-' + FixedWidth(dt.getMonth()+1, 2) + '-' + FixedWidth(dt.getDate(),2)+ ' '
+            + FixedWidth(dt.getHours(),2) + ':' 
+            + FixedWidth(dt.getMinutes(),2) + ':'
+            + FixedWidth(dt.getSeconds(),2);
+        $('.timestamp .value',e).text(dts);
+        $('.topic .value',e).text(qa.question.topic);
+        var qt = qa.question.text;
+        if(qt.substr(-1)!=='?')
+            qt+=' ?'
+        $('.question .value',e).text(qt);
+        $('.answer .value',e).text(qa.answer);
+        $('.link a', e).attr('href', '/?qa='+qa._id).on('click',function(e){
             e.preventDefault();
             ActivateTab('answer', qa._id);
         });
-        $('.btn_rate', e).on('click',function(e){
+        var rate_elem = $('.rate .value', e);
+        rate_elem.text('+' + qa.rate);
+        rate_elem.on('click',function(e){
             $.ajax({ type:'PUT', url:'/default/qas/'+qa._id, 
-                success: function(){ rate_elem.text(++qa.rate) }
+                success: function(){ rate_elem.text('+' + ++qa.rate) }
             });
         });
         return e.show();
@@ -23,7 +39,7 @@ function Init() {
 
     function UpdateTopics(){
         $.get('default/topics', function(topics) {
-            var e = $('#ask select');
+            var e = $('.topics select', '#ask');
             e.empty();
             topics.forEach(function(topic){
                 e.append('<option value="'+topic+'">' + topic + '</option>');// TODO
@@ -48,9 +64,9 @@ function Init() {
         UpdateTopics();
         var tab = $('#ask');
         var ctrl = {
-            btn_ask : $('button.ask', tab),
-            cbx_topics: $('select.topics', tab),
-            txt_question: $('textarea.question', tab)
+            btn_ask : $('.question_input button', tab),
+            cbx_topics: $('.topics select', tab),
+            txt_question: $('.question_input textarea', tab)
         };
         ctrl.btn_ask.on('click', function(){
             $.ajax({type:'POST', url:'/default/qas/', 
@@ -69,10 +85,11 @@ function Init() {
     tabs.answer = (function(){
         $('#qa_template').hide();
         var tab = $('#answer');
+        var tab_content = $('.answer_tab_content', tab);
         return function(qa) {
             if(typeof(qa)==='object') {
-                tab.empty();
-                tab.append(MakeQA(qa));
+                tab_content.empty();
+                tab_content.append(MakeQA(qa));
                 tab.show();
             }
             else {
@@ -89,7 +106,7 @@ function Init() {
 
     tabs.qas = (function(){
         var tab = $('#qas');
-        var qas_list = $('#qas_list');
+        var qas_list = $('.qas_list', tab);
 
         var skip = 0;
         var number = 5;
@@ -117,11 +134,11 @@ function Init() {
         function ShowQas() {
             tab.show();
             if(skip<=0) {
-                ctrl.btn_prev.hide();
+                ctrl.btn_prev.addClass('hidden');
                 skip = 0;
             }
             else
-                ctrl.btn_prev.show();
+                ctrl.btn_prev.removeClass('hidden');
             var url = 'default/qas?skip='+skip+'&number='+number;
             if(ctrl.cbx_sort.val()=='rate')
                 url+='&sort=1'
@@ -129,9 +146,9 @@ function Init() {
                 qas_list.empty();
                 qas.forEach(function(qa){ qas_list.append(MakeQA(qa)) });
                 if(qas.length<number)
-                    ctrl.btn_next.hide();
+                    ctrl.btn_next.addClass('hidden');
                 else
-                    ctrl.btn_next.show();
+                    ctrl.btn_next.removeClass('hidden');
             });
         }
         return ShowQas;
@@ -162,6 +179,3 @@ function Init() {
     }
     else ActivateTab('ask');
 }
-
-
-
