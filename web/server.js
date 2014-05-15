@@ -57,7 +57,10 @@ var db = mongo.db('mongodb://@localhost:27017/AnsweringMachine', {safe:true});
 // Server setup
 //-------------
 var app = express();
+
 app.locals.lang ='en';
+app.locals.pretty = app.get('env') === 'development';
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(log4js.connectLogger(log4js.getLogger('Web')));
@@ -107,7 +110,7 @@ app.route('/:user/qas')
                 timestamp: Date.now()/1000 | 0,
                 question: q,
                 answer: answer,
-                rate: 0
+                rate: 1
             }
             req.collection.insert(qa, {}, function(err, results){
                 if(err) return next(err);
@@ -155,32 +158,17 @@ app.use(function(req,res, next) {
     next(MakeError(ERRORS.NOT_FOUND,'Path ' + req.url + ' not found'));
 });
 
-if(app.get('env') === 'development') {
-    app.locals.pretty = true;
-    app.use(function(err, req, res, next) {
-        err.status = err.status || 500;
-        res.format({
-            html: function() { 
-                if(err.status===404)
-                    res.redirect('/');
-                else
-                    res.status(err.status).render('error', {err: err}); 
-            },
-            default: function() { res.send(err.status, err); }
-        });
-    });
-}
-
 app.use(function(err, req, res, next) {
+    log.error(err);    
     err.status = err.status || 500;
-        res.format({
-            html: function() { 
-                if(err.status===404)
-                    res.redirect('/');
-                else
-                    res.status(err.status).render('error', {err: err.status}); },
-            default: function() { res.send(err.status); }
-        });
+    res.format({
+        html: function() { 
+            if(err.status===404)
+                res.redirect('/');
+            else
+                res.status(err.status).render('error', {err: err.status}); },
+        default: function() { res.send(err.status); }
+    });
 });
 
 //----------------------------------

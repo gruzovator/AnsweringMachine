@@ -46,6 +46,14 @@ html
                     when 'ru'
                         h2 Сервис вопросов и ответов
                         p О сервисе
+            #error.tab
+                h2= {en:'Error', ru:'Ошибка'}[lang]
+                .error_tab_content
+                    p.e_0.err_str= {en: 'Unknown error', ru: 'Неизвестная ошибка'}[lang]
+                    p.e_1.err_str= {en: 'Server down', ru: 'Сервер выключен'}[lang]
+                    p.e_404.err_str= {en: 'Unknown request', ru: 'Неизвестный запрос'}[lang]
+                    p.e_500.err_str= {en: 'Internal Server Error', ru: 'Ошибка на стороне сервера'}[lang]
+                    P= {en: 'Try again later', ru: 'Зайдите попозже'}[lang]
 
             #qa_template.qa
                     .timestamp
@@ -65,6 +73,8 @@ html
                         button.value
                     .link
                         a= {en: 'Link', ru: 'Ссылка'}[lang]
+            .status
+                span
         script(src='js/zepto.min.js')
         script(src='js/ctrl.js')
 

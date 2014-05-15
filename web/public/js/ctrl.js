@@ -1,22 +1,28 @@
 window.onload = Init;
 
-function FixedWidth(str, size, pad) {
-    str = str.toString();
-    if(str.length >= size) return str;
-    if(!pad) pad ='0';
-    str = new Array(size+1).join(pad) + str;
-    return str.slice(-size);
+function MakeDateTimeStr(dt) {
+    function fw(str) {
+        var size = 2;
+        if(str.length >= size) return str;
+        str = new Array(size+1).join('0') + str;
+        return str.slice(-size);
+    }
+    return dt.getFullYear() + '-' + fw(dt.getMonth()+1) + '-' + fw(dt.getDate())+ ' '
+        + fw(dt.getHours()) + ':' 
+        + fw(dt.getMinutes()) + ':'
+        + fw(dt.getSeconds());
 }
 
 function Init() {
+    function OnAjaxError(xhr, error_type, error) {
+        var code = 1; //connection problem
+        if(error_type==='error') code = xhr.status;
+            ActivateTab('error', code);            
+    }
+
     function MakeQA(qa) {
         var e = $('#qa_template').clone().attr('id',qa._id);
-        var dt = new Date(qa.timestamp * 1000);
-        var dts = dt.getFullYear() + '-' + FixedWidth(dt.getMonth()+1, 2) + '-' + FixedWidth(dt.getDate(),2)+ ' '
-            + FixedWidth(dt.getHours(),2) + ':' 
-            + FixedWidth(dt.getMinutes(),2) + ':'
-            + FixedWidth(dt.getSeconds(),2);
-        $('.timestamp .value',e).text(dts);
+        $('.timestamp .value',e).text(MakeDateTimeStr(new Date(qa.timestamp * 1000)));
         $('.topic .value',e).text(qa.question.topic);
         var qt = qa.question.text;
         if(qt.substr(-1)!=='?')
@@ -31,7 +37,8 @@ function Init() {
         rate_elem.text('+' + qa.rate);
         rate_elem.on('click',function(e){
             $.ajax({ type:'PUT', url:'/default/qas/'+qa._id, 
-                success: function(){ rate_elem.text('+' + ++qa.rate) }
+                success: function(){ rate_elem.text('+' + ++qa.rate) },
+                error: OnAjaxError
             });
         });
         return e.show();
@@ -42,7 +49,7 @@ function Init() {
             var e = $('.topics select', '#ask');
             e.empty();
             topics.forEach(function(topic){
-                e.append('<option value="'+topic+'">' + topic + '</option>');// TODO
+                e.append('<option value="'+topic+'">' + topic + '</option>');
             });
         });
     }
@@ -69,11 +76,14 @@ function Init() {
             txt_question: $('.question_input textarea', tab)
         };
         ctrl.btn_ask.on('click', function(){
+            var t = ctrl.cbx_topics.val();
+            var q = ctrl.txt_question.val();
+            if(q.length==0 || t.length==0)
+                return;
             $.ajax({type:'POST', url:'/default/qas/', 
-                data: {
-                    topic: ctrl.cbx_topics.val(), 
-                    question: ctrl.txt_question.val() },
-                success: function(reply){ ActivateTab('answer', reply); }
+                data: { topic: t, question: q },
+                success: function(reply){ ActivateTab('answer', reply); },
+                error: OnAjaxError
             });
         });
         return function() {
@@ -98,7 +108,7 @@ function Init() {
                     type:'GET',
                     url:'/default/qas/'+id,
                     success: function(qa){ ActivateTab('answer', qa) },
-                    error:function(xhr, error_type, error){ ActivateTab('ask') }
+                    error: OnAjaxError
                 });
             }
         }
@@ -155,6 +165,14 @@ function Init() {
     }());
 
     tabs.about = function() { $('#about').show(); };
+
+    tabs.error = function(code) {
+        var tab = $('#error').show(); 
+        $('.err_str', tab).hide();
+        var i = $('.e_'+code);
+        if(!i) i = $('.e_'+0);
+        i.show();
+    };
 
     $('a').on('click', function(e){e.preventDefault();});
     $('a.tab_link').on('click', function(e){
