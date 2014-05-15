@@ -12,7 +12,9 @@ body {
 }
 
 a {
-    color: #00B7FF;;
+    /*color: #00B7FF;;*/
+    color: #00A7FF;
+    font-weight: bold;
     text-decoration: none;
 }
 
@@ -26,7 +28,8 @@ a:hover {
 
 .content {
     background-color: white;
-    border-color: black;
+    border-color: gray;
+    opacity: 60%;
     border-width: 1px;
     border-style: solid;
     max-width: 800px;
@@ -35,7 +38,7 @@ a:hover {
 }
 
 .tab {
-    padding: 10px;
+    padding: 20px;
     padding-top: 0px;
 }
 
@@ -54,11 +57,13 @@ a:hover {
     resize: vertical;
     width: 100%;
     height: 100px;
+    margin-top: 10px;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    margin-top: 10px;
-    margin-bottom: 5px;
+    background-image: url("../img/q.png");
+    background-repeat: no-repeat;
+    background-position: bottom right;
 }
 
 .question_input button{
@@ -86,22 +91,21 @@ a:hover {
 }
 
 .qa {
-    border-color: gray;
+    border-color: lightgray;
     border-width: 1px;
-    border-style: dotted;
+    border-style: solid;
     margin: 20px 0px;
     padding: 5px;
     position: relative;
 }
-/*.qa * {
-    border-color: gray;
-    border-width: 1px;
-    border-style: dotted;
-}
-*/
+
 .qa .value {
     display: block;
     padding: 5px;
+}
+
+.qa .timestamp{
+    font-style: italic;
 }
 
 .qa .topic{
