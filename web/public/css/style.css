@@ -6,9 +6,7 @@ html {
 body {
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
     background-image: url("../img/bg.png");
-    background-repeat: no-repeat;
-    background-size: 100%;
-    background-color: black;
+    background-color: white;
 }
 
 a {
