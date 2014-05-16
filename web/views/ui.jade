@@ -1,7 +1,7 @@
 doctype html
 html
     head
-        title Q&A
+        title= 'Q&A'
         link(rel='stylesheet', href='/css/style.css')
     body
         .content
@@ -41,11 +41,11 @@ html
             #about.tab
                 case lang
                     when 'en'
-                        h2 Q&A Serivce
-                        p About
+                        h2= 'Q&A Serivce'
+                        p= 'Service generates pseudo random texts using Markov chains'
                     when 'ru'
                         h2 Сервис вопросов и ответов
-                        p О сервисе
+                        p= 'Сервис создаёт псевдослучайные тексты, используя "цепи Маркова"'
             #error.tab
                 h2= {en:'Error', ru:'Ошибка'}[lang]
                 .error_tab_content

@@ -5,6 +5,10 @@ var bodyParser = require('body-parser');
 var log4js = require('log4js');
 var cfg = require('./config.js');
 var mongo  = require('mongoskin');
+var cookieParser = require('cookie-parser');
+var session      = require('express-session');
+var mongoStore = require('connect-mongo')(session);
+var favicon = require('serve-favicon');
 var log = log4js.getLogger('WebServer');
 
 //-------------
@@ -57,14 +61,20 @@ var db = mongo.db('mongodb://@localhost:27017/AnsweringMachine', {safe:true});
 // Server setup
 //-------------
 var app = express();
-
-app.locals.lang ='en';
+app.locals.lang = cfg.lang || 'en';
 app.locals.pretty = app.get('env') === 'development';
-
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+app.use(favicon(__dirname + '/public/img/favicon.ico'));
 app.use(log4js.connectLogger(log4js.getLogger('Web')));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cookieParser());
+app.use(session({  
+    secret: 'mMwdajI49+Q=',
+    key: 'sid',
+    store: new mongoStore({db: cfg.mongo_dbname}) ,
+    // cookie: {maxAge: 7*3600*1000}
+}));
 app.use(bodyParser());
 app.param('user', function(req, res, next, collection_name){
     if(collection_name!=='default')
@@ -110,7 +120,7 @@ app.route('/:user/qas')
                 timestamp: Date.now()/1000 | 0,
                 question: q,
                 answer: answer,
-                rate: 1
+                rate: 0
             }
             req.collection.insert(qa, {}, function(err, results){
                 if(err) return next(err);
@@ -130,11 +140,15 @@ app.route('/:user/qas/:id')
             res.send(qa);
         });
     })
-    .put(function(req, res, next){ //TODO: only once per session
+    .put(function(req, res, next){ 
+        req.session.rated_qas = req.session.rated_qas || {};
+        if( req.params.id in req.session.rated_qas )
+            return res.send('');
         req.collection.updateById(req.params.id, {$inc:{rate: 1}}, {safe:true, multi:false}, 
             function(err, result){
                 if (err) return next(err);
                 if(result!==1) return next(MakeError(ERRORS.NOT_FOUND));
+                req.session.rated_qas[req.params.id] = 1;
                 res.send('OK');
             });
     })

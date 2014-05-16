@@ -34,10 +34,17 @@ function Init() {
             ActivateTab('answer', qa._id);
         });
         var rate_elem = $('.rate .value', e);
-        rate_elem.text('+' + qa.rate);
+        if(qa.rate>0)
+            rate_elem.text('+' + qa.rate);
+        else
+            rate_elem.text('+');
         rate_elem.on('click',function(e){
             $.ajax({ type:'PUT', url:'/default/qas/'+qa._id, 
-                success: function(){ rate_elem.text('+' + ++qa.rate) },
+                success: function(reply){ 
+                    if(reply==='OK')
+                        rate_elem.text('+' + ++qa.rate) 
+                    rate_elem.attr('disabled', '');
+                },
                 error: OnAjaxError
             });
         });

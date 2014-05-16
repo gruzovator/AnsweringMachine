@@ -1,4 +1,5 @@
 module.exports = {
-    lang: 'ru',
-    port: 3000
+    mongo_dbname: 'AnsweringMachine',
+    lang: 'en',
+    port: 3000,
 }

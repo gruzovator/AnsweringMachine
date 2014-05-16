@@ -157,3 +157,9 @@ a:hover {
 #answer .qa .value {
     overflow-x: auto;
 }
+
+button:disabled {
+    color:black;
+    background-color: white;
+    border-style: none;
+}
