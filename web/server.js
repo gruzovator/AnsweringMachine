@@ -75,7 +75,7 @@ app.use(session({
     store: new mongoStore({db: cfg.mongo_dbname}) ,
     // cookie: {maxAge: 7*3600*1000}
 }));
-app.use(bodyParser());
+app.use(bodyParser()); // default request size limit is 100kb
 app.param('user', function(req, res, next, collection_name){
     if(collection_name!=='default')
         return res.send(404);

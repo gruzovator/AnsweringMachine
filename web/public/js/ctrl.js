@@ -150,6 +150,7 @@ function Init() {
 
         function ShowQas() {
             tab.show();
+            qas_list.empty();
             if(skip<=0) {
                 ctrl.btn_prev.addClass('hidden');
                 skip = 0;
@@ -159,13 +160,15 @@ function Init() {
             var url = 'default/qas?skip='+skip+'&number='+number;
             if(ctrl.cbx_sort.val()=='rate')
                 url+='&sort=1'
-            $.get(url, function(qas){
-                qas_list.empty();
-                qas.forEach(function(qa){ qas_list.append(MakeQA(qa)) });
-                if(qas.length<number)
-                    ctrl.btn_next.addClass('hidden');
-                else
-                    ctrl.btn_next.removeClass('hidden');
+            $.ajax({type: 'GET', url:url, 
+                success: function(qas) {
+                    qas.forEach(function(qa){ qas_list.append(MakeQA(qa)) });
+                    if(qas.length<number)
+                        ctrl.btn_next.addClass('hidden');
+                    else
+                        ctrl.btn_next.removeClass('hidden');
+                },
+                error: OnAjaxError
             });
         }
         return ShowQas;
@@ -177,7 +180,7 @@ function Init() {
         var tab = $('#error').show(); 
         $('.err_str', tab).hide();
         var i = $('.e_'+code);
-        if(!i) i = $('.e_'+0);
+        if(i.length == 0) i = $('.e_'+0);
         i.show();
     };
 
