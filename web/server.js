@@ -10,17 +10,7 @@ var session      = require('express-session');
 var mongoStore = require('connect-mongo')(session);
 var favicon = require('serve-favicon');
 var log = log4js.getLogger('WebServer');
-
-//-------------
-// Stub
-//-------------
-var answering_machine = {
-    _seed: 0,
-    ask: function(question, cb) {
-        cb(null, 'random text ' + (++this._seed));
-    },
-    topics: function() { return [ 'topic 1', 'topic 2']}
-}
+var answering_machine = require('../am/Client.js');
 
 //-------------
 // Utils
@@ -114,7 +104,7 @@ app.route('/:user/qas')
             return next(MakeError(ERRORS.BAD_REQUEST, 'Wrong topic'));
         if(!IsString(q.text) || q.text.length==0 )
             return next(MakeError(ERRORS.BAD_REQUEST, 'Wrong text type or empty text'));
-        answering_machine.ask(q, function(err, answer){
+        answering_machine.Ask(q, function(err, answer){
             if(err) return next(err);
             var qa = {
                 timestamp: Date.now()/1000 | 0,
