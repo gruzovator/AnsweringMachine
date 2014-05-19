@@ -49,7 +49,9 @@ function OnConnect(sock) {
             sock.Write({error: 'Unknown topic'});
         }
         else {
-            sock.Write({answer : topics[topic].markov_chains.GetFullAnswer(text)});
+            var answer = topics[topic].markov_chains.GetAnswer(text);
+            log.debug('answer', answer);
+            sock.Write({answer : answer});
         }
     }));
 }
@@ -85,7 +87,7 @@ topics_watcher
                 log.error('Topic', name, err);
                 w.close();
             });
-        topics[name] = { watcher: w, markov_chains: new MarkovChains() };
+        topics[name] = { watcher: w, markov_chains: new MarkovChains({prefix_length: cfg.prefix_length || 3}) };
         for(var i in clients) {
             clients[i].write(JSON.stringify({topics: Object.keys(topics)})+os.EOL);
         }

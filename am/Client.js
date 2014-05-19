@@ -73,6 +73,7 @@ var answering_machine = (function(){
 
     return {
         Ask: function(question, cb) {
+            log.debug('Question', question, '(requests_to_send length=',requests_to_send.length + ')');
             var request = {
                 question: question,
                 cb : cb,

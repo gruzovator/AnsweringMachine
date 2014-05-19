@@ -20,7 +20,7 @@ function MarkovChains(options)
     self.prefix_length = options.prefix_length || 3;
     self.chains_n = 0;
     self.chains = {};
-    self.MAX_SENTENCE_WORDS = 32;
+    self.MAX_SENTENCE_WORDS = 48;
 }
 
 MarkovChains.prototype.AddText = function(text)
@@ -64,6 +64,7 @@ MarkovChains.prototype._GetRandomSentence = function(start_prefix_array)
     var self = this;
     var prefix = start_prefix_array;
     var words = [];
+    var capital = true;
     while(true) {
         var chain = self.chains[prefix] || [];
         var w = chain[chain.length*Math.random() | 0];
@@ -71,15 +72,26 @@ MarkovChains.prototype._GetRandomSentence = function(start_prefix_array)
         w = prefix.shift();
         if(w===undefined || words.length >= self.MAX_SENTENCE_WORDS)
             break;
-        if(w==='.' || w==='?' || w==='!')
-            break;
-        if(w.length>0)
+        if(w==='--' || w === '•')
+            continue;
+        if(w==='.' || w==='?' || w==='!') {
+            if(words.length)
+                words[words.length-1]+=w;
+            capital = true;
+            continue;
+        }
+        if(w.length>0) {
+            if(capital) {
+                w = w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+                capital = false;
+            }
             words.push(w);
+        }
     }
     var s = words.join(' ');
     if(words.length==0)
         return '';
-    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() + '.';
+    return s + '.';
 }
 
 MarkovChains.prototype.GetAnswer = function(question)
