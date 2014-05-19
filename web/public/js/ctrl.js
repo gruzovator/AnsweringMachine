@@ -26,7 +26,7 @@ function Init() {
         $('.topic .value',e).text(qa.question.topic);
         var qt = qa.question.text;
         if(qt.substr(-1)!=='?')
-            qt+=' ?'
+            qt+='?'
         $('.question .value',e).text(qt);
         $('.answer .value',e).text(qa.answer);
         $('.link a', e).attr('href', '/?qa='+qa._id).on('click',function(e){

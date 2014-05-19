@@ -3,6 +3,9 @@ html
     head
         title Q&A
     body
-        h2= {en: 'Something went wrong', ru: 'Что-то пошло не так'}[lang]
+        if err==404
+            h2= {en: 'Path not found', ru: 'Запрашиваемый ресурс не найден'}[lang]
+        else
+            h2= {en: 'Something went wrong', ru: 'Что-то пошло не так'}[lang]
         p #{err}
         a(href='/')= {en: 'Main page', ru: 'Главная страница'}[lang]

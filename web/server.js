@@ -166,11 +166,7 @@ app.use(function(err, req, res, next) {
     log.error(err);    
     err.status = err.status || 500;
     res.format({
-        html: function() { 
-            if(err.status===404)
-                res.redirect('/');
-            else
-                res.status(err.status).render('error', {err: err.status}); },
+        html: function() { res.status(err.status).render('error', {err: err.status}); },
         default: function() { res.send(err.status); }
     });
 });
